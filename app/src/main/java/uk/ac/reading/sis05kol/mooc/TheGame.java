@@ -106,9 +106,10 @@ public class TheGame extends GameThread{
                           // Part of paddle 'wobble' prevention.
         }
         if(mPaddleX >= mCanvasWidth && mPaddleSpeedX > 0) { // test position and direction of travel.
-            mPaddleSpeedX = 0; // Stop paddle if it will go off screen to the   right.
+            mPaddleSpeedX = 0; // Stop paddle if it will go off screen to the right.
             mPaddleX = mCanvasWidth; // Make sure mPaddleX is never more than the screen width.
                                      // Part of paddle 'wobble' prevention.
+            // change for github commit test
         }
     }
 
