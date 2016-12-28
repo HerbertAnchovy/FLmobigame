@@ -49,8 +49,10 @@ public abstract class GameThread extends Thread {
 	protected long mLastTime = 0;
  
 	protected Bitmap mBackgroundImage;
-	
+
 	protected long score = 0;
+
+	protected long lives = 3;
 
     //Used for time keeping
 	private long now;
@@ -102,6 +104,8 @@ public abstract class GameThread extends Thread {
 			setState(STATE_RUNNING);
 			
 			setScore(0);
+
+            setLives(3);
 		}
 	}
 	
@@ -326,6 +330,19 @@ public abstract class GameThread extends Thread {
 		}
 	}
 
+	public void setLives(long lives) {
+		this.lives = lives;
+
+		synchronized (monitor) {
+			Message msg = mHandler.obtainMessage();
+			Bundle b = new Bundle();
+			b.putBoolean("lives", true);
+			b.putString("text", getLivesString().toString());
+			msg.setData(b);
+			mHandler.sendMessage(msg);
+		}
+	}
+
 	public float getScore() {
 		return score;
 	}
@@ -333,10 +350,21 @@ public abstract class GameThread extends Thread {
 	public void updateScore(long score) {
 		this.setScore(this.score + score);
 	}
-	
+
+	public void updateLives(long lives) {
+		this.setLives(this.lives - lives);
+	}
+
+	public float getLives() {
+		return lives;
+	}
 	
 	protected CharSequence getScoreString() {
 		return Long.toString(Math.round(this.score));
+	}
+
+	protected CharSequence getLivesString() {
+		return Long.toString(Math.round(this.lives));
 	}
 	
 }

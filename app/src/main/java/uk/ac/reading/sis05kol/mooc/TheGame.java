@@ -47,6 +47,10 @@ public class TheGame extends GameThread {
     //Will store the image of the sad ball (score ball)
     private Bitmap mSadBall;
 
+    // Swap images - jlp
+    private Bitmap mSadBall2;
+    private Bitmap mSmileyBall2;
+
     //The X and Y position of the SadBalls on the screen
     //The point is the top left corner, not middle, of the balls
     //Initially at -100 to avoid them being drawn in 0,0 of the screen
@@ -81,6 +85,16 @@ public class TheGame extends GameThread {
         mSadBall = BitmapFactory.decodeResource
                 (gameView.getContext().getResources(),
                         R.drawable.sad_ball);
+
+        //Prepare the image of the SmileyBall so we can draw it on the screen (using a canvas)
+        mSmileyBall2 = BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.smiley_ball_2);
+
+        //Prepare the image of the SadBall(s) so we can draw it on the screen (using a canvas)
+        mSadBall2 = BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.sad_ball_2);
     }
 
     //This is run before a new game (also after an old game)
@@ -145,7 +159,7 @@ public class TheGame extends GameThread {
         //Draw SmileyBall
         canvas.drawBitmap(mSmileyBall, mSmileyBallX - mSmileyBall.getWidth() / 2, mSmileyBallY - mSmileyBall.getHeight() / 2, null);
 
-        //Loop through all SadBall
+        //Loop through all SadBalls...
         for (int i = 0; i < mSadBallX.length; i++) {
             //Draw SadBall in position i
             canvas.drawBitmap(mSadBall, mSadBallX[i] - mSadBall.getWidth() / 2, mSadBallY[i] - mSadBall.getHeight() / 2, null);
@@ -179,6 +193,12 @@ public class TheGame extends GameThread {
         }
 
     }
+
+    private void swapSmileyBallImages() {
+        if (mSmileyBall != mSmileyBall2) {
+            mSmileyBall = mSmileyBall2;
+        } else mSmileyBall2 = mSmileyBall;
+      }
 
     //This is run just before the game "scenario" is printed on the screen
     @Override
@@ -228,24 +248,15 @@ public class TheGame extends GameThread {
             mBallSpeedY = -mBallSpeedY;
         }
 
-        //If the ball goes out of the bottom of the screen => lose the game
+        //If the ball goes out of the bottom of the screen...
         if (mBallY >= mCanvasHeight) {
-            if(lifeLeft()) {
-                resetPaddlePosition();
-            }
-            else {
+            // Reduce Lives by 1. If Lives = 0 then game is lost.
+            updateLives(1);
+            if (getLives() <= 0) {
                 sound.playLoseSound(); // Lose sound played. Yes, it's that twat Trump.
                 setState(GameThread.STATE_LOSE);
             }
         }
-    }
-
-    private boolean lifeLeft() {
-        mLifeCount--;
-        if(mLifeCount == 0){
-            return false; // no lives left
-        }
-        return true; // lives left
     }
 
     private boolean updateBallCollision(float x, float y) {
