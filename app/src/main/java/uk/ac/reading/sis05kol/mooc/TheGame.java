@@ -4,86 +4,159 @@ package uk.ac.reading.sis05kol.mooc;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.view.MotionEvent;
 
-public class TheGame extends GameThread{
+public class TheGame extends GameThread {
+
+    //MediaPlayer trumpPlay = MediaPlayer.create(mContext, R.raw.trumpSound); // jlp
+
+    private SoundPlayer sound;
+
+    private int mLifeCount = 3;
 
     //Will store the image of a ball
     private Bitmap mBall;
 
-    private Bitmap mPaddle; // Added @3.5.
-    private float mPaddleX = 0; // Added @3.5. Note: Paddle can only move from side to side (X direction).
-
-    private float mPaddleSpeedX = 0; // Added @3.5.
-
-    //The X and Y position of the ball on the screen (middle of ball)
-    private float mBallX = -100; // Positions ball off screen at start. Why is this good?
-    private float mBallY = -100; // (note that top left is 0,0}.
+    //The X and Y position of the ball on the screen
+    //The point is the top left corner, not middle, of the ball
+    //Initially at -100 to avoid them being drawn in 0,0 of the screen
+    private float mBallX = -100;
+    private float mBallY = -100;
 
     //The speed (pixel/second) of the ball in direction X and Y
     private float mBallSpeedX = 0;
     private float mBallSpeedY = 0;
+
+    //Will store the image of the Paddle used to hit the ball
+    private Bitmap mPaddle;
+
+    //Paddle's x position. Y will always be the bottom of the screen
+    private float mPaddleX = 0;
+
+    //The speed (pixel/second) of the paddle in direction X and Y
+    private float mPaddleSpeedX = 0;
+
+    //Will store the image of the smiley ball (score ball)
+    private Bitmap mSmileyBall;
+
+    //The X and Y position of the ball on the screen
+    //The point is the top left corner, not middle, of the ball
+    //Initially at -100 to avoid them being drawn in 0,0 of the screen
+    private float mSmileyBallX = -100;
+    private float mSmileyBallY = -100;
+
+    //Will store the image of the sad ball (score ball)
+    private Bitmap mSadBall;
+
+    //The X and Y position of the SadBalls on the screen
+    //The point is the top left corner, not middle, of the balls
+    //Initially at -100 to avoid them being drawn in 0,0 of the screen
+    private float[] mSadBallX = {-100, -100, -100};
+    private float[] mSadBallY = new float[3];
+
+    //This will store the min distance allowed between a big ball and the small ball
+    //This is used to check collisions
+    private float mMinDistanceBetweenBallAndPaddle = 0;
 
     //This is run before anything else, so we can prepare things here
     public TheGame(GameView gameView) {
         //House keeping
         super(gameView);
 
-        //Prepare the mBall image so we can draw it on the screen (using a canvas)
+        //Prepare the image so we can draw it on the screen (using a canvas)
         mBall = BitmapFactory.decodeResource
                 (gameView.getContext().getResources(),
                         R.drawable.small_red_ball);
 
-        //Prepare the paddle image so we can draw it on the screen (using a canvas)
-        mPaddle = BitmapFactory.decodeResource   // Added @3.5.
+        //Prepare the image of the paddle so we can draw it on the screen (using a canvas)
+        mPaddle = BitmapFactory.decodeResource
                 (gameView.getContext().getResources(),
-                        R.drawable.yellow_ball); // Yellow better against green background!
+                        R.drawable.yellow_ball);
+
+        //Prepare the image of the SmileyBall so we can draw it on the screen (using a canvas)
+        mSmileyBall = BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.smiley_ball);
+
+        //Prepare the image of the SadBall(s) so we can draw it on the screen (using a canvas)
+        mSadBall = BitmapFactory.decodeResource
+                (gameView.getContext().getResources(),
+                        R.drawable.sad_ball);
     }
 
     //This is run before a new game (also after an old game)
     @Override
     public void setupBeginning() {
+
+        // Initialise SoundPlayer object
+        sound = new SoundPlayer(mContext);
+
         //Initialise speeds
-        mBallSpeedX = mCanvasWidth / 3; // Relate x-axis speed to width of screen; instead of an arbitrary value.
-        mBallSpeedY = mCanvasWidth / 3;
+        //mCanvasWidth and mCanvasHeight are declared and managed elsewhere
+        mBallSpeedX = mCanvasWidth / 3;
+        mBallSpeedY = mCanvasHeight / 3;
 
         //Place the ball in the middle of the screen.
         //mBall.Width() and mBall.getHeigh() gives us the height and width of the image of the ball
         mBallX = mCanvasWidth / 2;
         mBallY = mCanvasHeight / 2;
 
-        // Place paddle in middle of screen at the beginning.
+        //Place Paddle in the middle of the screen
         mPaddleX = mCanvasWidth / 2;
 
-        // We don't ball moving at start.
-        mPaddleSpeedX = 0;  // Added @3.5.
+        //Place SmileyBall in the top middle of the screen
+        mSmileyBallX = mCanvasWidth / 2;
+        mSmileyBallY = mSmileyBall.getHeight() / 2;
+
+        //Place all SadBalls forming a pyramid underneath the SmileyBall
+        mSadBallX[0] = mCanvasWidth / 3;
+        mSadBallY[0] = mCanvasHeight / 3;
+
+        mSadBallX[1] = mCanvasWidth - mCanvasWidth / 3;
+        mSadBallY[1] = mCanvasHeight / 3;
+
+        mSadBallX[2] = mCanvasWidth / 2;
+        mSadBallY[2] = mCanvasHeight / 5;
+
+        //Get the minimum distance between a small ball and a bigball
+        //We leave out the square root to limit the calculations of the program
+        //Remember to do that when testing the distance as well
+        mMinDistanceBetweenBallAndPaddle = (mPaddle.getWidth() / 2 + mBall.getWidth() / 2) * (mPaddle.getWidth() / 2 + mBall.getWidth() / 2);
     }
 
     @Override
     protected void doDraw(Canvas canvas) {
-        //If there isn't a canvas to draw on do nothing
+        //If there isn't a canvas to do nothing
         //It is ok not understanding what is happening here
-        if(canvas == null) return;
+        if (canvas == null) return;
 
+        //House keeping
         super.doDraw(canvas);
 
-        //draw the image of the ball using the X and Y of mBall
-        //drawBitmap uses top left corner as reference, we use middle of picture
-        //null means that we will use the image without any extra features (called Paint)
+        //canvas.drawBitmap(bitmap, x, y, paint) uses top/left corner of bitmap as 0,0
+        //we use 0,0 in the middle of the bitmap, so negate half of the width and height of the ball to draw the ball as expected
+        //A paint of null means that we will use the image without any extra features (called Paint)
+
+        //draw the image of the ball using the X and Y of the ball
         canvas.drawBitmap(mBall, mBallX - mBall.getWidth() / 2, mBallY - mBall.getHeight() / 2, null);
 
-        // Added @3.5.
-        //Draw the image of the paddle using the X and Y of mPaddle.
-        //drawBitmap uses top LH corner as reference (0,0).
-        //getWidth and getHeight are divided by 2 because, in our case, we want to reference the middle of the image bitmap.
-        //Bottom of screen is mCanvasHeight. That is where the mPaddle is to be positioned.
+        //Draw Paddle using X of paddle and the bottom of the screen (top/left is 0,0)
         canvas.drawBitmap(mPaddle, mPaddleX - mPaddle.getWidth() / 2, mCanvasHeight - mPaddle.getHeight() / 2, null);
+
+        //Draw SmileyBall
+        canvas.drawBitmap(mSmileyBall, mSmileyBallX - mSmileyBall.getWidth() / 2, mSmileyBallY - mSmileyBall.getHeight() / 2, null);
+
+        //Loop through all SadBall
+        for (int i = 0; i < mSadBallX.length; i++) {
+            //Draw SadBall in position i
+            canvas.drawBitmap(mSadBall, mSadBallX[i] - mSadBall.getWidth() / 2, mSadBallY[i] - mSadBall.getHeight() / 2, null);
+        }
     }
+
 
     //This is run whenever the phone is touched by the user
     @Override
     protected void actionOnTouch(float x, float y) {
-        // Added @3.5. Position paddle where user touches screen.
+        //Move the ball to the x position of the touch
         mPaddleX = x;
     }
 
@@ -91,65 +164,121 @@ public class TheGame extends GameThread{
     //This is run whenever the phone moves around its axises
     @Override
     protected void actionWhenPhoneMoved(float xDirection, float yDirection, float zDirection) {
-		// Increase/decrease the speed of the ball.
+        //Change the paddle speed
         mPaddleSpeedX = mPaddleSpeedX + 70f * xDirection;
 
-        // Added @3.5. Prevent paddle from going outside screen, whilst also preventing the
-        // tricky 'wobble' problem (solved by taking into account direction of travel).
-        // Remember, direction of travel is given by speed polarity where,
-        // -ve speed means item is moving to left...
-        // +ve speed means moving to right.
+        //If paddle is outside the screen and moving further away
+        //Move it into the screen and set its speed to 0
+        if (mPaddleX <= 0 && mPaddleSpeedX < 0) {
+            mPaddleSpeedX = 0;
+            mPaddleX = 0;
+        }
+        if (mPaddleX >= mCanvasWidth && mPaddleSpeedX > 0) {
+            mPaddleSpeedX = 0;
+            mPaddleX = mCanvasWidth;
+        }
 
-        if(mPaddleX <= 0 && mPaddleSpeedX < 0) {   // test position and direction of travel.
-            mPaddleSpeedX = 0; // Stop paddle if it will go off screen to the left.
-            mPaddleX = 0; // Make sure mPaddleX is never less than ZERO.
-                          // Part of paddle 'wobble' prevention.
-        }
-        if(mPaddleX >= mCanvasWidth && mPaddleSpeedX > 0) { // test position and direction of travel.
-            mPaddleSpeedX = 0; // Stop paddle if it will go off screen to the right.
-            mPaddleX = mCanvasWidth; // Make sure mPaddleX is never more than the screen width.
-                                     // Part of paddle 'wobble' prevention.
-            // change for github commit test
-        }
     }
 
     //This is run just before the game "scenario" is printed on the screen
     @Override
     protected void updateGame(float secondsElapsed) {
-        // Move the ball's X and Y using the speed (pixel/sec).
-        // i.e. speed = distance / time
-        // so time * speed = distance.
-        // Distance travelled, in X and Y directions, is what we're calculating here, it seems:
+        float distanceBetweenBallAndPaddle;
+
+        // Check for paddle collision
+        if (mBallSpeedY > 0) {
+            //updateBallCollision(mPaddleX, mCanvasHeight);
+            if(updateBallCollision(mPaddleX, mCanvasHeight)) { sound.playHitSound(); }
+        }
+
+        // Move the ball's X and Y using the speed (pixel/sec)
         mBallX = mBallX + secondsElapsed * mBallSpeedX;
         mBallY = mBallY + secondsElapsed * mBallSpeedY;
 
-        // Stop ball going off of the screen. We want it to bounce off the screen edge...
-        // IOW,
-        // If ball hits LH edge of screen *OR*
-        // if ball hits RH edge of screen, make it bounce back.
-        // Also, we want to take into account the 'direction of travel'* of the ball.
-        // Hence either condition is only true depending on whether mBallSpeedX shows
-        // ball going left (<0) or right (>0). So,
-        // if ball has reached LH edge (*having come from the right) then bounce it back.
-        // if ball has reached RH edge (*having come from the left) then bounce it back.
-        // *This fixes the ball 'wobble' problem Karsten talked about, apparently.
-        if( ( (mBallX <= mBall.getWidth()/2) && (mBallSpeedX < 0) ) ||
-            ( (mBallX >= mCanvasWidth - mBall.getWidth()/2) && (mBallSpeedX > 0) ) )
-        {
-            mBallSpeedX = -mBallSpeedX; // Bounce back (inverting the speed produces the bounce).
-        }
-
-        if( ( (mBallY <= mBall.getHeight()/2) && (mBallSpeedY < 0) ) ||
-                ( (mBallY >= mCanvasHeight - mBall.getWidth()/2) && (mBallSpeedY > 0) ) )
-        {
-            mBallSpeedY = -mBallSpeedY; // Bounce back (inverting the speed produces the bounce).
-        }
-
-        // Move the paddle's X using the speed (pixel/sec).
-        // i.e. Position paddle (basically the distance in x direction) given the speed and time:
+        // Move the paddle's X and Y using the speed (pixel/sec)
         mPaddleX = mPaddleX + secondsElapsed * mPaddleSpeedX;
-    }
-}
 
+
+        //Check if the ball hits either the left side or the right side of the screen
+        //But only do something if the ball is moving towards that side of the screen
+        //If it does that => change the direction of the ball in the X direction
+        if ((mBallX <= mBall.getWidth() / 2 && mBallSpeedX < 0) || (mBallX >= mCanvasWidth - mBall.getWidth() / 2 && mBallSpeedX > 0)) {
+            mBallSpeedX = -mBallSpeedX;
+        }
+
+        // Check smiley ball collision.
+        if(updateBallCollision(mSmileyBallX, mSmileyBallY)) {
+            //Increase score
+            updateScore(1);
+            sound.playHillarySound(); // Hillary speaks... but only if you've collided with her!
+            resetPaddlePosition();
+        }
+
+        //Loop through all SadBalls
+        for (int i = 0; i < mSadBallX.length; i++) {
+            //Perform collisions (if necessary) between SadBall in position i and the red ball
+            if(updateBallCollision(mSadBallX[i], mSadBallY[i])) {
+                sound.playTrumpSound(); // Random Trumpism when collision with sad ball occurs.
+            }
+        }
+
+        //If the ball goes out of the top of the screen and moves towards the top of the screen =>
+        //change the direction of the ball in the Y direction
+        if (mBallY <= mBall.getWidth() / 2 && mBallSpeedY < 0) {
+            mBallSpeedY = -mBallSpeedY;
+        }
+
+        //If the ball goes out of the bottom of the screen => lose the game
+        if (mBallY >= mCanvasHeight) {
+            if(lifeLeft()) {
+                resetPaddlePosition();
+            }
+            else {
+                sound.playLoseSound(); // Lose sound played. Yes, it's that twat Trump.
+                setState(GameThread.STATE_LOSE);
+            }
+        }
+    }
+
+    private boolean lifeLeft() {
+        mLifeCount--;
+        if(mLifeCount == 0){
+            return false; // no lives left
+        }
+        return true; // lives left
+    }
+
+    private boolean updateBallCollision(float x, float y) {
+
+        //Get actual distance (without square root - remember?) between the mBall and the ball being checked
+        float distanceBetweenBallAndPaddle = (x - mBallX) * (x - mBallX) + (y - mBallY) * (y - mBallY);
+
+        //Check if the actual distance is lower than the allowed => collision
+        if (mMinDistanceBetweenBallAndPaddle >= distanceBetweenBallAndPaddle) {
+            //Get the present speed (this should also be the speed going away after the collision)
+            float speedOfBall = (float) Math.sqrt(mBallSpeedX * mBallSpeedX + mBallSpeedY * mBallSpeedY);
+
+            //Change the direction of the ball
+            mBallSpeedX = mBallX - x;
+            mBallSpeedY = mBallY - y;
+
+            //Get the speed after the collision
+            float newSpeedOfBall = (float) Math.sqrt(mBallSpeedX * mBallSpeedX + mBallSpeedY * mBallSpeedY);
+
+            //using the fraction between the original speed and present speed to calculate the needed
+            //velocities in X and Y to get the original speed but with the new angle.
+            mBallSpeedX = mBallSpeedX * speedOfBall / newSpeedOfBall;
+            mBallSpeedY = mBallSpeedY * speedOfBall / newSpeedOfBall;
+
+            return true; // Collision has occurred.
+        }
+        return false; // No collision.
+    }
+
+    private void resetPaddlePosition() {
+        mPaddleX = mCanvasWidth / 2;
+     }
+
+}
 // This file is part of the course "Begin Programming: Build your first mobile game" from futurelearn.com
 // Copyright: University of Reading and Karsten Lundqvist

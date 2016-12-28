@@ -13,6 +13,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
+import android.media.AudioManager; // jlp
+import android.media.SoundPool;    // jlp
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
 	private volatile GameThread thread;
@@ -26,9 +28,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
 	private TextView mScoreView;
 	private TextView mStatusView;
 
+	// jlp additions...
+	private SoundPool sounds;
+	private int sound1;
+	private int sound2;
+
+    //
+
     Sensor accelerometer;
     Sensor magnetometer;
-
 
 	public GameView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -227,6 +235,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    //sounds = new SoundPool();
+    //snd1 = sounds.load(mContext, R.raw.sound1,1);
+
 }
 
 // This file is part of the course "Begin Programming: Build your first mobile game" from futurelearn.com

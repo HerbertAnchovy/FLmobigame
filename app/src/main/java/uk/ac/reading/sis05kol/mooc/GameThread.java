@@ -36,7 +36,7 @@ public abstract class GameThread extends Thread {
 	private Handler mHandler;
 	
 	//Android Context - this stores almost all we need to know
-	private Context mContext;
+	public Context mContext;
 	
 	//The view
 	public GameView mGameView;
