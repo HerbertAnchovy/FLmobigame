@@ -13,8 +13,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
-import android.media.AudioManager; // jlp
-import android.media.SoundPool;    // jlp
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
 	private volatile GameThread thread;
@@ -28,12 +26,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
 	private TextView mScoreView;
 	private TextView mStatusView;
 
-	// jlp additions...
-	private SoundPool sounds;
-	private int sound1;
-	private int sound2;
-
-    //
+	private TextView mLivesView;
 
     Sensor accelerometer;
     Sensor magnetometer;
@@ -51,6 +44,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
 			public void handleMessage(Message m) {
 				if(m.getData().getBoolean("score")) {
 					mScoreView.setText(m.getData().getString("text"));
+				}
+				else if(m.getData().getBoolean("lives")) {
+					mLivesView.setText(m.getData().getString("text"));
 				}
 				else {
 					//So it is a status
@@ -117,15 +113,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
 	public void setStatusView(TextView mStatusView) {
 		this.mStatusView = mStatusView;
 	}
-	
+
+	public void setScoreView(TextView mScoreView) { this.mScoreView = mScoreView; }
 	public TextView getScoreView() {
 		return mScoreView;
 	}
 
-	public void setScoreView(TextView mScoreView) {
-		this.mScoreView = mScoreView;
-	}
-	
+	public void setLivesView(TextView mLivesView) { this.mLivesView = mLivesView; }
+
+	public TextView getLivesView() { return mLivesView; }
 
 	public Handler getmHandler() {
 		return mHandler;
@@ -134,8 +130,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
 	public void setmHandler(Handler mHandler) {
 		this.mHandler = mHandler;
 	}
-	
-	
+
 	/*
 	 * Screen functions
 	 */
@@ -197,7 +192,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
 				retry = false;
 			} 
 			catch (InterruptedException e) {
-				//naugthy, ought to do something...
+				// Naughty, ought to do something...
 			}
 		}
 	}

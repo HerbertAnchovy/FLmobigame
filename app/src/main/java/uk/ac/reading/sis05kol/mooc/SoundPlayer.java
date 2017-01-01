@@ -16,6 +16,9 @@ public class SoundPlayer {
     private static int hillarySound;
     private static int hitSound;
     private static int loseSound;
+    private static int winSound;
+    private static int whoopsSound;
+
     final int[] trumpSoundArray = new int[4];
     final Random r = new Random();
 
@@ -26,14 +29,21 @@ public class SoundPlayer {
         sp = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
         hillarySound = sp.load(context, R.raw.hillary1, 1);
         hitSound = sp.load(context, R.raw.hit, 1);
+
+        whoopsSound = sp.load(context, R.raw.whoops, 1);
+        // whoops.
+
         loseSound = sp.load(context, R.raw.lose, 1);
         // lose - We will make america great again
+
+        winSound = sp.load(context, R.raw.win, 1);
+        // win - I will build a great, great wall
 
         trumpSoundArray[0] = sp.load(context, R.raw.trump1, 1);
         trumpSoundArray[1] = sp.load(context, R.raw.trump2, 1);
         trumpSoundArray[2] = sp.load(context, R.raw.trump3, 1);
         trumpSoundArray[3] = sp.load(context, R.raw.trump4, 1);
-        // Trump Sounds:
+        // Random Trump Sounds:
         // trump1 - I don't care... I don't care
         // trump2 - I'm really rich
         // trump3 - Crooked Hillary
@@ -58,6 +68,19 @@ public class SoundPlayer {
     public void playLoseSound(){
 
         // play(int soundID,float leftVolume,float rightVolume,int priority,int loop,float rate)
-        sp.play(loseSound, 1.0f, 1.0f, 1, 0, 1.0f);
+        sp.play(loseSound, 1.0f, 1.0f, 3, 0, 1.0f);
+    }
+
+    public void playWinSound(){
+
+        // play(int soundID,float leftVolume,float rightVolume,int priority,int loop,float rate)
+        sp.play(winSound, 1.0f, 1.0f, 3, 0, 1.0f);
+    }
+
+
+    public void playWhoopsSound(){
+
+        // play(int soundID,float leftVolume,float rightVolume,int priority,int loop,float rate)
+        sp.play(whoopsSound, 1.0f, 1.0f, 1, 0, 1.0f);
     }
 }

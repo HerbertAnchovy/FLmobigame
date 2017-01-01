@@ -52,7 +52,7 @@ public abstract class GameThread extends Thread {
 
 	protected long score = 0;
 
-	protected long lives = 3;
+	protected long lives = 0; // Added for updateLives().
 
     //Used for time keeping
 	private long now;
@@ -105,7 +105,7 @@ public abstract class GameThread extends Thread {
 			
 			setScore(0);
 
-            setLives(3);
+            setLives(3); // Added for updateLives().
 		}
 	}
 	
@@ -267,7 +267,8 @@ public abstract class GameThread extends Thread {
 					str = res.getText(R.string.mode_ready);
 				else 
 					if (mMode == STATE_PAUSE)
-						str = res.getText(R.string.mode_pause);
+						if(this.lives > 0) { str = res.getText(R.string.mode_ready);}
+						else { str = res.getText(R.string.mode_pause);}
 					else 
 						if (mMode == STATE_LOSE)
 							str = res.getText(R.string.mode_lose);
@@ -330,6 +331,7 @@ public abstract class GameThread extends Thread {
 		}
 	}
 
+    // Added for updateLives() functionality.
 	public void setLives(long lives) {
 		this.lives = lives;
 
@@ -342,29 +344,27 @@ public abstract class GameThread extends Thread {
 			mHandler.sendMessage(msg);
 		}
 	}
-
-	public float getScore() {
-		return score;
-	}
 	
 	public void updateScore(long score) {
 		this.setScore(this.score + score);
 	}
 
-	public void updateLives(long lives) {
-		this.setLives(this.lives - lives);
+	public float getScore() {
+		return score;
 	}
 
-	public float getLives() {
-		return lives;
+    // Added for updateLives() functionality.
+	public void updateLives(long lives) {
+		this.setLives(lives);
 	}
 	
 	protected CharSequence getScoreString() {
 		return Long.toString(Math.round(this.score));
 	}
 
+    // Added for updateLives() functionality.
 	protected CharSequence getLivesString() {
-		return Long.toString(Math.round(this.lives));
+        return Long.toString(Math.round(this.lives));
 	}
 	
 }

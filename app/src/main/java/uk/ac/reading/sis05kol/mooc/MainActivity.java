@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
         mGameView = (GameView)findViewById(R.id.gamearea);
         mGameView.setStatusView((TextView)findViewById(R.id.text));
         mGameView.setScoreView((TextView)findViewById(R.id.score));
-
+        mGameView.setLivesView((TextView)findViewById(R.id.lives));
         this.startGame(mGameView, null, savedInstanceState);
     }
 
@@ -59,7 +59,6 @@ public class MainActivity extends Activity {
             mGameThread.setState(GameThread.STATE_PAUSE);
         }
     }
-
 
     @Override
     protected void onDestroy() {
