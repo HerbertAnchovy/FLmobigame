@@ -60,7 +60,7 @@ public class TheGame extends GameThread {
     private float mMinDistanceBetweenBallAndPaddle = 0;
 
     /* *********************************************************************** */
-    /* TheGame() is run before anything else, so we can prepare things here).  */
+    /* TheGame() is run before anything else, so we can prepare things here.  */
     /* *********************************************************************** */
     public TheGame(GameView gameView) {
 

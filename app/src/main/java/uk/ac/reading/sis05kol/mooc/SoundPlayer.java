@@ -7,7 +7,7 @@ import android.media.SoundPool;
 import java.util.Random;
 
 /**
- * Created by Jez on 28/12/2016.
+ * Created by HerbertAnchovy on 28/12/2016.
  */
 
 public class SoundPlayer {
@@ -76,7 +76,6 @@ public class SoundPlayer {
         // play(int soundID,float leftVolume,float rightVolume,int priority,int loop,float rate)
         sp.play(winSound, 1.0f, 1.0f, 3, 0, 1.0f);
     }
-
 
     public void playWhoopsSound(){
 
