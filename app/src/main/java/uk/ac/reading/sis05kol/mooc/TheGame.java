@@ -1,6 +1,6 @@
 package uk.ac.reading.sis05kol.mooc;
 
-// Import additional Android libraries required:
+// Import additional Android libraries required for TheGame:
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
